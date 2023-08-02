@@ -1,0 +1,17 @@
+.form {
+  display: flex;
+  gap: 12px;
+  max-width: 567px;
+  margin: 0 auto;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 16px;
+  row-gap: 48px;
+  list-style-type: none;
+  margin: 48px 0 0;
+  padding: 0;
+}

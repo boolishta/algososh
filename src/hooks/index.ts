@@ -1,0 +1,1 @@
+export { useCurrentIndex } from './useCurrentIndex';
