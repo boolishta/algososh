@@ -1,1 +1,4 @@
-export { useCurrentIndex } from './useCurrentIndex';
+import { useItemState } from './useItemState';
+import { useCurrentIndex } from './useCurrentIndex';
+
+export { useItemState, useCurrentIndex };
