@@ -23,6 +23,33 @@ export const SortingPage: React.FC = () => {
   const [sortedArray, setSortedArray] = useState<number[]>([]);
   const { setChangingState, setModifiedState, getItemState } = useItemState();
 
+  const bubbleSortArray = async () => {
+    const n = sortedArray.length;
+
+    let i: number;
+    for (i = 0; i < n - 1; i++) {
+      let j: number;
+      for (j = 0; j < n - i - 1; j++) {
+        const shouldSwap =
+          (direction === Direction.Ascending &&
+            sortedArray[j] > sortedArray[j + 1]) ||
+          (direction === Direction.Descending &&
+            sortedArray[j] < sortedArray[j + 1]);
+
+        if (shouldSwap) {
+          await sleep(DELAY_IN_MS);
+          setChangingState([j, j + 1]);
+          await sleep(DELAY_IN_MS);
+          swap(sortedArray, j, j + 1);
+          setSortedArray([...sortedArray]);
+          setChangingState([]);
+        }
+      }
+      setModifiedState((state) => [...state, j]);
+    }
+    setIsLoading(false);
+  };
+
   const selectionSortArray = async () => {
     const n = sortedArray.length;
     for (let i = 0; i < n - 1; i++) {
@@ -68,6 +95,7 @@ export const SortingPage: React.FC = () => {
       selectionSortArray();
       console.log('sort selection');
     } else if (algorithm === Algorithm.Bubble) {
+      bubbleSortArray();
       console.log('sort bubble');
     }
   }, [array]);
