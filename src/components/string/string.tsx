@@ -4,17 +4,16 @@ import { Input } from '../ui/input/input';
 import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import styles from './string.module.css';
 import { Circle } from '../ui/circle/circle';
-import { ElementStates } from '../../types/element-states';
 import { sleep } from '../../utils/sleep';
 import { swap } from '../../utils/swap';
 import { DELAY_IN_MS } from '../../constants/delays';
+import { useItemState } from '../../hooks';
 
 export const StringComponent: React.FC = () => {
   const [string, setString] = useState<string[]>([]);
-  const [changingState, setChangingState] = useState<number[]>([]);
-  const [modifiedState, setModifiedState] = useState<number[]>([]);
   const [reversedString, setReversedString] = useState<string[]>([]);
   const [disabled, setDisabled] = useState(false);
+  const { setChangingState, setModifiedState, getItemState } = useItemState();
 
   const onSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
@@ -25,16 +24,6 @@ export const StringComponent: React.FC = () => {
     setChangingState([]);
     setModifiedState([]);
     setDisabled(true);
-  };
-
-  const getCharState = (id: number) => {
-    let state = ElementStates.Default;
-    if (modifiedState.includes(id)) {
-      state = ElementStates.Modified;
-    } else if (changingState.includes(id)) {
-      state = ElementStates.Changing;
-    }
-    return state;
   };
 
   const reverseString = async () => {
@@ -49,6 +38,7 @@ export const StringComponent: React.FC = () => {
       setReversedString([...reversedString]);
       setModifiedState((state) => [...state, start, end]);
     }
+    setChangingState([]);
     setDisabled(false);
   };
 
@@ -81,7 +71,7 @@ export const StringComponent: React.FC = () => {
             <li key={index}>
               <Circle
                 letter={char}
-                state={getCharState(index)}
+                state={getItemState(index)}
               />
             </li>
           ))}
