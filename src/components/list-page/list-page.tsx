@@ -52,7 +52,7 @@ export const ListPage: React.FC = () => {
       const num = Number(index);
       setIndex(num);
       setAddedIndex(num);
-      setChangingState(createIndexArray(num));
+      setChangingState(createIndexArray(num - 1));
     }
     setValue(string);
     form.reset();

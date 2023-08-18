@@ -1,9 +1,9 @@
 export function createIndexArray(n: number): number[] {
   const numberArray: number[] = [];
 
-  if (n <= 0) return [0];
+  if (n <= 0) return [];
 
-  for (let i = 0; i <= n - 1; i++) {
+  for (let i = 0; i <= n; i++) {
     numberArray.push(i);
   }
 
