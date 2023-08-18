@@ -66,7 +66,6 @@ export const ListPage: React.FC = () => {
     } else if (insertMode === InsertModes.Index && index !== null) {
       insertAtIndex(index, value);
     }
-    setAddedIndex(() => 0);
     setValue(null);
     if (array.length > 0) {
       if (insertMode === InsertModes.Head) {
@@ -89,6 +88,16 @@ export const ListPage: React.FC = () => {
     await sleep(DELAY_IN_MS);
     setRemovableValue(null);
     setRemovableIndex(null);
+  };
+
+  const addToHead = () => {
+    setInsertMode(InsertModes.Head);
+    setAddedIndex(0);
+  };
+
+  const addToTail = () => {
+    setInsertMode(InsertModes.Tail);
+    setAddedIndex(array.length - 1);
   };
 
   const removeFromHead = async () => {
@@ -118,8 +127,7 @@ export const ListPage: React.FC = () => {
 
   const getHeadItem = useCallback(
     (itemIndex: number) => {
-      if (value && 0 === itemIndex) {
-        //TODO:сделать что бы кружок появлялся у изменяемого индекса
+      if (value && addedIndex === itemIndex) {
         return (
           <Circle
             isSmall={true}
@@ -162,12 +170,12 @@ export const ListPage: React.FC = () => {
           <Button
             text="Добавить в head"
             type="submit"
-            onClick={() => setInsertMode(InsertModes.Head)}
+            onClick={addToHead}
           />
           <Button
             text="Добавить в tail"
             type="submit"
-            onClick={() => setInsertMode(InsertModes.Tail)}
+            onClick={addToTail}
           />
           <Button
             text="Удалить из head"
