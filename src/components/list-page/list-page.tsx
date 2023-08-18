@@ -21,6 +21,7 @@ enum InsertModes {
   Head = 'head',
   Tail = 'tail',
   Index = 'index',
+  Remove = 'remove',
 }
 
 export const ListPage: React.FC = () => {
@@ -52,7 +53,10 @@ export const ListPage: React.FC = () => {
       const num = Number(index);
       setIndex(num);
       setAddedIndex(num);
-      setChangingState(createIndexArray(num - 1));
+
+      if (insertMode === InsertModes.Index && string) {
+        setChangingState(createIndexArray(num - 1));
+      }
     }
     setValue(string);
     form.reset();
@@ -83,6 +87,7 @@ export const ListPage: React.FC = () => {
       setModifiedState([]);
       setChangingState([]);
       setAddedIndex(null);
+      setIndex(null);
     }
   };
 
@@ -111,6 +116,19 @@ export const ListPage: React.FC = () => {
     setInsertMode(InsertModes.Index);
   };
 
+  const removeByIndex = async () => {
+    if (
+      index !== null &&
+      insertMode === InsertModes.Remove &&
+      index <= array.length - 1
+    ) {
+      animateItemRemove(index);
+      await sleep(DELAY_IN_MS);
+      deleteAtIndex(index);
+      setIndex(null);
+    }
+  };
+
   const removeFromHead = async () => {
     if (array.length === 0) return;
     animateItemRemove(0);
@@ -131,6 +149,9 @@ export const ListPage: React.FC = () => {
   useEffect(() => {
     setArray(listArray);
   }, [listArray]);
+  useEffect(() => {
+    removeByIndex();
+  }, [index, insertMode]);
 
   const getHeadItem = useCallback(
     (itemIndex: number) => {
@@ -209,7 +230,7 @@ export const ListPage: React.FC = () => {
             extraClass={styles.double}
             text="Удалить по индексу"
             type="submit"
-            onClick={() => setInsertMode(null)}
+            onClick={() => setInsertMode(InsertModes.Remove)}
           />
         </div>
       </form>

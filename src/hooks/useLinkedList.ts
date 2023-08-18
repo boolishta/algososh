@@ -95,6 +95,7 @@ export function useLinkedList() {
       if (!currentNode.next) {
         setTail(currentNode);
       }
+      updateArray();
     },
     [head]
   );
