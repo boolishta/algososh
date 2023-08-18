@@ -15,6 +15,7 @@ import { useItemState } from '../../hooks';
 import { sleep } from '../../utils/sleep';
 import { DELAY_IN_MS } from '../../constants/delays';
 import { ElementStates } from '../../types/element-states';
+import { createIndexArray } from '../../utils/array';
 
 enum InsertModes {
   Head = 'head',
@@ -48,7 +49,10 @@ export const ListPage: React.FC = () => {
     const string = formData.get('string')?.toString() || null;
     const index = formData.get('index') || null;
     if (index !== null) {
-      setIndex(Number(index));
+      const num = Number(index);
+      setIndex(num);
+      setAddedIndex(num);
+      setChangingState(createIndexArray(num));
     }
     setValue(string);
     form.reset();
@@ -72,9 +76,12 @@ export const ListPage: React.FC = () => {
         setModifiedState([0]);
       } else if (insertMode === InsertModes.Tail) {
         setModifiedState([array.length]);
+      } else if (insertMode === InsertModes.Index && index !== null) {
+        setModifiedState([index]);
       }
       await sleep(DELAY_IN_MS);
       setModifiedState([]);
+      setChangingState([]);
       setAddedIndex(null);
     }
   };
@@ -100,6 +107,10 @@ export const ListPage: React.FC = () => {
     setAddedIndex(array.length - 1);
   };
 
+  const addByIndex = () => {
+    setInsertMode(InsertModes.Index);
+  };
+
   const removeFromHead = async () => {
     if (array.length === 0) return;
     animateItemRemove(0);
@@ -117,10 +128,6 @@ export const ListPage: React.FC = () => {
   useEffect(() => {
     updateLinkedList();
   }, [value]);
-  useEffect(() => {
-    if (index === null) return;
-    deleteAtIndex(index);
-  }, [index]);
   useEffect(() => {
     setArray(listArray);
   }, [listArray]);
@@ -196,7 +203,7 @@ export const ListPage: React.FC = () => {
             extraClass={styles.double}
             text="Добавить по индексу"
             type="submit"
-            onClick={() => setInsertMode(InsertModes.Index)}
+            onClick={addByIndex}
           />
           <Button
             extraClass={styles.double}
