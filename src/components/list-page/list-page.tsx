@@ -42,7 +42,13 @@ export const ListPage: React.FC = () => {
   const [addedIndex, setAddedIndex] = useState<number | null>(null);
   const [index, setIndex] = useState<number | null>(null);
   const [array, setArray] = useState<string[]>([]);
-  // TODO: loading
+  const [isAddedToHead, setIsAddedToHead] = useState(false);
+  const [isAddedToTail, setIsAddedToTail] = useState(false);
+  const [isRemovedFromHead, setIsRemovedFromHead] = useState(false);
+  const [isRemovedFromTail, setIsRemovedFromTail] = useState(false);
+  const [isRemovedByIndex, setIsRemovedByIndex] = useState(false);
+  const [isAddedByIndex, setIsAddedByIndex] = useState(false);
+
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -64,6 +70,9 @@ export const ListPage: React.FC = () => {
 
   const updateLinkedList = async () => {
     if (value === null) return;
+    if (insertMode === InsertModes.Head) setIsAddedToHead(true);
+    if (insertMode === InsertModes.Tail) setIsAddedToTail(true);
+    if (insertMode === InsertModes.Index) setIsAddedByIndex(true);
     if (array.length > 0) {
       await sleep(DELAY_IN_MS);
     }
@@ -85,10 +94,13 @@ export const ListPage: React.FC = () => {
       }
       await sleep(DELAY_IN_MS);
       setModifiedState([]);
-      setChangingState([]);
-      setAddedIndex(null);
-      setIndex(null);
     }
+    setChangingState([]);
+    setAddedIndex(null);
+    setIndex(null);
+    setIsAddedToTail(false);
+    setIsAddedToHead(false);
+    setIsAddedByIndex(false);
   };
 
   const animateItemRemove = async (index: number) => {
@@ -122,25 +134,31 @@ export const ListPage: React.FC = () => {
       insertMode === InsertModes.Remove &&
       index <= array.length - 1
     ) {
+      setIsRemovedByIndex(true);
       animateItemRemove(index);
       await sleep(DELAY_IN_MS);
       deleteAtIndex(index);
       setIndex(null);
+      setIsRemovedByIndex(false);
     }
   };
 
   const removeFromHead = async () => {
     if (array.length === 0) return;
+    setIsRemovedFromHead(true);
     animateItemRemove(0);
     await sleep(DELAY_IN_MS);
     deleteFromHead();
+    setIsRemovedFromHead(false);
   };
 
   const removeFromTail = async () => {
     if (array.length === 0) return;
+    setIsRemovedFromTail(true);
     animateItemRemove(array.length - 1);
     await sleep(DELAY_IN_MS);
     deleteFromTail();
+    setIsRemovedFromTail(false);
   };
 
   useEffect(() => {
@@ -199,19 +217,23 @@ export const ListPage: React.FC = () => {
             text="Добавить в head"
             type="submit"
             onClick={addToHead}
+            isLoader={isAddedToHead}
           />
           <Button
             text="Добавить в tail"
             type="submit"
             onClick={addToTail}
+            isLoader={isAddedToTail}
           />
           <Button
             text="Удалить из head"
             onClick={removeFromHead}
+            isLoader={isRemovedFromHead}
           />
           <Button
             text="Удалить из tail"
             onClick={removeFromTail}
+            isLoader={isRemovedFromTail}
           />
         </div>
         <div className={styles.grid}>
@@ -225,12 +247,14 @@ export const ListPage: React.FC = () => {
             text="Добавить по индексу"
             type="submit"
             onClick={addByIndex}
+            isLoader={isAddedByIndex}
           />
           <Button
             extraClass={styles.double}
             text="Удалить по индексу"
             type="submit"
             onClick={() => setInsertMode(InsertModes.Remove)}
+            isLoader={isRemovedByIndex}
           />
         </div>
       </form>
