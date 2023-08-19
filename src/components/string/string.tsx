@@ -4,46 +4,50 @@ import { Input } from '../ui/input/input';
 import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import styles from './string.module.css';
 import { Circle } from '../ui/circle/circle';
-import { sleep } from '../../utils/sleep';
-import { swap } from '../../utils/swap';
 import { DELAY_IN_MS } from '../../constants/delays';
-import { useItemState } from '../../hooks';
+import { getLetterState, getReversingStringSteps } from './utils';
 
 export const StringComponent: React.FC = () => {
-  const [string, setString] = useState<string[]>([]);
-  const [reversedString, setReversedString] = useState<string[]>([]);
-  const [disabled, setDisabled] = useState(false);
-  const { setChangingState, setModifiedState, getItemState } = useItemState();
+  const [string, setString] = useState('');
+  const [currentAlgorithmStep, setCurrentAlgorithmStep] = useState<string[]>(
+    []
+  );
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [step, setStep] = useState<number | null>(null);
 
   const onSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const str = formData.get('string')?.toString() || '';
-    setString(() => str.split(''));
-    setReversedString(() => str.split(''));
-    setChangingState([]);
-    setModifiedState([]);
-    setDisabled(true);
+    setString(str);
+    event.currentTarget.reset();
   };
 
-  const reverseString = async () => {
-    const len = string.length;
-    for (let i = 0; i < len / 2; i++) {
-      const start = i,
-        end = len - i - 1;
-      await sleep(DELAY_IN_MS);
-      setChangingState([start, end]);
-      await sleep(DELAY_IN_MS);
-      swap(reversedString, i, len - i - 1);
-      setReversedString([...reversedString]);
-      setModifiedState((state) => [...state, start, end]);
+  const startAlgorithm = () => {
+    if (string.length === 0) return;
+    const steps = getReversingStringSteps(string);
+    if (steps.length) {
+      setStep(null);
+      setIsLoaded(true);
+      let intervalId: NodeJS.Timer;
+      const stepCount = steps.length;
+      let currentStep = 0;
+      setCurrentAlgorithmStep(steps[currentStep]);
+      intervalId = setInterval(() => {
+        setStep(currentStep);
+        if (currentStep < stepCount) {
+          setCurrentAlgorithmStep(steps[currentStep]);
+        } else {
+          clearInterval(intervalId);
+          setIsLoaded(false);
+        }
+        currentStep++;
+      }, DELAY_IN_MS);
     }
-    setChangingState([]);
-    setDisabled(false);
   };
 
   useEffect(() => {
-    reverseString();
+    startAlgorithm();
   }, [string]);
 
   return (
@@ -62,16 +66,16 @@ export const StringComponent: React.FC = () => {
         <Button
           text="Рассчитать"
           type="submit"
-          disabled={disabled}
+          isLoader={isLoaded}
         />
       </form>
-      {reversedString && (
+      {currentAlgorithmStep && (
         <ul className={styles.list}>
-          {reversedString.map((char, index) => (
+          {currentAlgorithmStep.map((char, index) => (
             <li key={index}>
               <Circle
                 letter={char}
-                state={getItemState(index)}
+                state={getLetterState(step, index, string.length)}
               />
             </li>
           ))}
