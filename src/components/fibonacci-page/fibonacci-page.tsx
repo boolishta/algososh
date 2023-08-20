@@ -4,7 +4,7 @@ import { Input } from '../ui/input/input';
 import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import styles from './fibonacci-page.module.css';
 import { Circle } from '../ui/circle/circle';
-import { fibonacci } from '../../utils/fibonacci';
+import { fibonacci } from './utils';
 import { useCurrentIndex } from '../../hooks';
 
 export const FibonacciPage: React.FC = () => {
