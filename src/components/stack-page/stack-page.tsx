@@ -58,7 +58,15 @@ export const StackPage: React.FC = () => {
   };
 
   useEffect(() => {
-    addToStack();
+    let isComponentMounted = true;
+
+    if (isComponentMounted) {
+      addToStack();
+    }
+
+    return () => {
+      isComponentMounted = false;
+    };
   }, [string]);
 
   return (
