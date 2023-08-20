@@ -6,7 +6,11 @@ import { Direction } from '../../types/direction';
 import styles from './sorting-page.module.css';
 import { randomArr } from '../../utils/randomArr';
 import { DELAY_IN_MS } from '../../constants/delays';
-import { getBubbleSortedArray, getItemState } from './utils';
+import {
+  getBubbleSortedArray,
+  getItemState,
+  getSelectionSortedArray,
+} from './utils';
 import { Algorithm } from './type';
 
 const MIN_LENGTH = 3;
@@ -23,8 +27,6 @@ export const SortingPage: React.FC = () => {
     []
   );
 
-  const selectionSortArray = () => {};
-
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -38,7 +40,7 @@ export const SortingPage: React.FC = () => {
     if (array.length === 0) return;
     let steps: number[][] = [];
     if (algorithm === Algorithm.Selection) {
-      selectionSortArray();
+      steps = getSelectionSortedArray(array, direction);
     } else if (algorithm === Algorithm.Bubble) {
       steps = getBubbleSortedArray(array, direction);
     }
