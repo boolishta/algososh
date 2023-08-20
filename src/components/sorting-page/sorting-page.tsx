@@ -5,103 +5,76 @@ import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import { Direction } from '../../types/direction';
 import styles from './sorting-page.module.css';
 import { randomArr } from '../../utils/randomArr';
-import { swap } from '../../utils/swap';
-import { sleep } from '../../utils/sleep';
 import { DELAY_IN_MS } from '../../constants/delays';
-import { useItemState } from '../../hooks';
+import { getBubbleSortedArray, getItemState } from './utils';
+import { Algorithm } from './type';
 
-enum Algorithm {
-  Selection = 'selection',
-  Bubble = 'bubble',
-}
+const MIN_LENGTH = 3;
+const MAX_LENGTH = 17;
 
 export const SortingPage: React.FC = () => {
-  const [algorithm, setAlgorithm] = useState<string | null>(null);
+  const [algorithm, setAlgorithm] = useState<Algorithm | null>(null);
   const [direction, setDirection] = useState<Direction>(Direction.Ascending);
   const [isLoading, setIsLoading] = useState(false);
   const [array, setArray] = useState<number[]>([]);
-  const [sortedArray, setSortedArray] = useState<number[]>([]);
-  const { setChangingState, setModifiedState, getItemState } = useItemState();
+  const [step, setStep] = useState<number | null>(null);
+  const [algorithmSteps, setAlgorithmSteps] = useState<number[][]>();
+  const [currentAlgorithmStep, setCurrentAlgorithmStep] = useState<number[]>(
+    []
+  );
 
-  const bubbleSortArray = async () => {
-    const n = sortedArray.length;
-
-    let i: number;
-    for (i = 0; i < n - 1; i++) {
-      let j: number;
-      for (j = 0; j < n - i - 1; j++) {
-        const shouldSwap =
-          (direction === Direction.Ascending &&
-            sortedArray[j] > sortedArray[j + 1]) ||
-          (direction === Direction.Descending &&
-            sortedArray[j] < sortedArray[j + 1]);
-
-        if (shouldSwap) {
-          await sleep(DELAY_IN_MS);
-          setChangingState([j, j + 1]);
-          await sleep(DELAY_IN_MS);
-          swap(sortedArray, j, j + 1);
-          setSortedArray([...sortedArray]);
-          setChangingState([]);
-        }
-      }
-      setModifiedState((state) => [...state, j]);
-    }
-    setIsLoading(false);
-  };
-
-  const selectionSortArray = async () => {
-    const n = sortedArray.length;
-    for (let i = 0; i < n - 1; i++) {
-      let indexToSwap = i;
-      for (let j = i + 1; j < n; j++) {
-        if (
-          (direction === Direction.Ascending &&
-            sortedArray[j] < sortedArray[indexToSwap]) ||
-          (direction === Direction.Descending &&
-            sortedArray[j] > sortedArray[indexToSwap])
-        ) {
-          indexToSwap = j;
-        }
-      }
-      if (indexToSwap !== i) {
-        await sleep(DELAY_IN_MS);
-        setChangingState([i, indexToSwap]);
-        await sleep(DELAY_IN_MS);
-        swap(sortedArray, i, indexToSwap);
-        setSortedArray([...sortedArray]);
-        setModifiedState((state) => [...state, i, indexToSwap]);
-        setChangingState([]);
-      }
-    }
-    setIsLoading(false);
-  };
+  const selectionSortArray = () => {};
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const algorithm = formData.get('algorithm')?.toString() || null;
-    const arr = randomArr();
-    setChangingState([]);
-    setModifiedState([]);
-    setAlgorithm(algorithm);
-    setIsLoading(true);
+    const arr = randomArr(MIN_LENGTH, MAX_LENGTH);
+    setAlgorithm(algorithm as Algorithm);
     setArray(arr);
-    setSortedArray(arr);
+  };
+
+  const startAlgorithm = () => {
+    if (array.length === 0) return;
+    let steps: number[][] = [];
+    if (algorithm === Algorithm.Selection) {
+      selectionSortArray();
+    } else if (algorithm === Algorithm.Bubble) {
+      steps = getBubbleSortedArray(array, direction);
+    }
+    if (steps.length) {
+      setAlgorithmSteps(steps);
+      setStep(null);
+      setIsLoading(true);
+      let intervalId: NodeJS.Timer;
+      const stepCount = steps.length;
+      let currentStep = 0;
+      setCurrentAlgorithmStep(steps[currentStep]);
+      intervalId = setInterval(() => {
+        setStep(currentStep);
+        if (currentStep < stepCount) {
+          setCurrentAlgorithmStep(steps[currentStep]);
+        } else {
+          clearInterval(intervalId);
+          setIsLoading(false);
+        }
+        currentStep++;
+      }, DELAY_IN_MS);
+    }
   };
 
   useEffect(() => {
-    if (algorithm === Algorithm.Selection) {
-      selectionSortArray();
-      console.log('sort selection');
-    } else if (algorithm === Algorithm.Bubble) {
-      bubbleSortArray();
-      console.log('sort bubble');
+    let isMounted = true;
+    if (isMounted) {
+      startAlgorithm();
     }
+    return () => {
+      isMounted = false;
+    };
   }, [array]);
 
   const getItemClassName = (index: number) => {
-    const state = getItemState(index);
+    const state = getItemState(index, step, algorithmSteps);
     return `${styles.column} ${styles[state]}`;
   };
 
@@ -153,7 +126,7 @@ export const SortingPage: React.FC = () => {
         />
       </form>
       <ul className={styles.list}>
-        {sortedArray.map((num, index) => (
+        {currentAlgorithmStep.map((num, index) => (
           <li key={`${index}-${num}`}>
             <div
               className={getItemClassName(index)}
