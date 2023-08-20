@@ -1,93 +1,84 @@
 import React, { FormEventHandler, useEffect, useState } from 'react';
-import { DELAY_IN_MS } from '../../constants/delays';
-import { useItemState } from '../../hooks';
-import { sleep } from '../../utils/sleep';
 import { Button } from '../ui/button/button';
 import { Circle } from '../ui/circle/circle';
 import { Input } from '../ui/input/input';
 import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import styles from './queue-page.module.css';
+import { Queue } from './utils';
+import { useItemState } from '../../hooks';
+import { sleep } from '../../utils/sleep';
+import { DELAY_IN_MS } from '../../constants/delays';
 
-const QUEUE_SIZE = 7;
-const INITIAL_QUEUE = Array(QUEUE_SIZE).fill(undefined);
+const queue = new Queue<string>(7);
 
 export const QueuePage: React.FC = () => {
-  const [item, setItem] = useState<string>();
-  const [head, setHead] = useState<number | null>(null);
-  const [tail, setTail] = useState<number | null>(null);
+  const [item, setItem] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [queue, setQueue] = useState<(string | undefined)[]>(INITIAL_QUEUE);
+  const [queueArray, setQueueArray] = useState<(string | null)[]>(
+    queue.toArray()
+  );
   const { setChangingState, getItemState } = useItemState();
-  const enqueue: FormEventHandler<HTMLFormElement> = (event) => {
+
+  const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const string = formData.get('string')?.toString();
-    setIsLoading(true);
+    const string = formData.get('string')?.toString() || null;
     setItem(string);
-    setTail((prevState) => (prevState !== null ? prevState + 1 : 0));
     form.reset();
   };
-  const dequeue = async () => {
-    if (head !== null && tail !== null && head < tail) {
+
+  const addToQueue = async () => {
+    if (item) {
       setIsLoading(true);
-      setChangingState([head, tail]);
-      await sleep(DELAY_IN_MS);
-      setHead((prevState) => (prevState !== null ? prevState + 1 : 0));
-    } else if (head === null) {
-      setHead(0);
-    }
-  };
-  const updateTailQueue = async () => {
-    setQueue((prevState) => {
-      const newState = [...prevState];
-      newState.splice(tail ? tail : 0, 1, item);
-      return newState;
-    });
-    if (tail !== null) {
-      setChangingState([tail]);
-    }
-    if (tail === 0) {
-      setHead(0);
-    }
-    setIsLoading(false);
-  };
-  const updateHeadQueue = () => {
-    if (head !== null && tail !== null && head > 0) {
-      setChangingState([tail]);
-      setQueue((prevState) => {
-        const newState = [...prevState];
-        newState.splice(head ? head - 1 : 0, 1, undefined);
-        return newState;
-      });
+      queue.enqueue(item);
+      setQueueArray(queue.toArray());
+      setItem(null);
+      const changingIndex = queue.tailIndex();
+      if (changingIndex !== null) {
+        setChangingState([changingIndex]);
+        await sleep(DELAY_IN_MS);
+      }
+      setChangingState([]);
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    updateTailQueue();
-  }, [tail]);
-  useEffect(() => {
-    updateHeadQueue();
-  }, [head]);
-  const resetForm = () => {
-    setQueue(INITIAL_QUEUE);
-    setHead(null);
-    setTail(null);
-    setItem(undefined);
+
+  const remove = async () => {
+    setIsLoading(true);
+    const changingIndex = queue.headIndex();
+    if (changingIndex !== null) {
+      setChangingState([changingIndex]);
+      await sleep(DELAY_IN_MS);
+    }
+    queue.dequeue();
+    setQueueArray(queue.toArray());
     setChangingState([]);
+    setIsLoading(false);
   };
-  const isHead = (index: number) => {
-    return head === index ? 'head' : null;
+
+  const reset = () => {
+    queue.reset();
+    setQueueArray(queue.toArray());
   };
-  const isTail = (index: number) => {
-    return tail === index ? 'tail' : null;
-  };
-  const disabled = () => tail === QUEUE_SIZE - 1;
+
+  const getHead = (index: number) =>
+    index === queue.headIndex() ? 'head' : null;
+
+  const getTail = (index: number) =>
+    index === queue.tailIndex() ? 'tail' : null;
+
+  const isFull = () => queue.full();
+
+  useEffect(() => {
+    addToQueue();
+  }, [item]);
+
   return (
     <SolutionLayout title="Очередь">
       <form
         className={styles.form}
-        onSubmit={enqueue}
+        onSubmit={handleSubmit}
       >
         <Input
           maxLength={4}
@@ -95,35 +86,35 @@ export const QueuePage: React.FC = () => {
           extraClass={styles.input}
           name="string"
           required
-          disabled={isLoading || disabled()}
+          disabled={isFull()}
         />
         <Button
           text="Добавить"
           type="submit"
           isLoader={isLoading}
-          disabled={disabled()}
+          disabled={isFull()}
         />
         <Button
           text="Удалить"
           type="button"
-          onClick={dequeue}
+          onClick={remove}
           isLoader={isLoading}
+          disabled={queue.isEmpty()}
         />
         <Button
           extraClass="ml-35"
           text="Очистить"
           type="button"
-          disabled={isLoading}
-          onClick={resetForm}
+          onClick={reset}
         />
       </form>
       <ul className={styles.list}>
-        {queue.map((item, index) => (
+        {queueArray.map((item, index) => (
           <li key={`${item}-${index}`}>
             <Circle
-              head={isHead(index)}
-              tail={isTail(index)}
-              letter={item}
+              head={getHead(index)}
+              tail={getTail(index)}
+              letter={item ?? undefined}
               index={index}
               state={getItemState(index)}
             />
