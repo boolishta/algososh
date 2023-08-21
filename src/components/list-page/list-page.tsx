@@ -10,30 +10,17 @@ import { Input } from '../ui/input/input';
 import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import { ArrowIcon } from '../ui/icons/arrow-icon';
 import styles from './list-page.module.css';
-import { useLinkedList } from '../../hooks/useLinkedList';
 import { useItemState } from '../../hooks';
 import { sleep } from '../../utils/sleep';
 import { DELAY_IN_MS } from '../../constants/delays';
 import { ElementStates } from '../../types/element-states';
 import { createIndexArray } from '../../utils/array';
+import { InsertModes } from './type';
+import { LinkedList } from './utils';
 
-enum InsertModes {
-  Head = 'head',
-  Tail = 'tail',
-  Index = 'index',
-  Remove = 'remove',
-}
+const List = new LinkedList<string>();
 
 export const ListPage: React.FC = () => {
-  const {
-    listArray,
-    append,
-    prepend,
-    deleteFromHead,
-    deleteFromTail,
-    deleteAtIndex,
-    insertAtIndex,
-  } = useLinkedList();
   const { setModifiedState, setChangingState, getItemState } = useItemState();
   const [insertMode, setInsertMode] = useState<InsertModes | null>(null);
   const [value, setValue] = useState<string | null>(null);
@@ -77,11 +64,14 @@ export const ListPage: React.FC = () => {
       await sleep(DELAY_IN_MS);
     }
     if (insertMode === InsertModes.Head) {
-      prepend(value);
+      List.prepend(value);
+      setArray(List.toArray());
     } else if (insertMode === InsertModes.Tail) {
-      append(value);
+      List.append(value);
+      setArray(List.toArray());
     } else if (insertMode === InsertModes.Index && index !== null) {
-      insertAtIndex(index, value);
+      List.addByIndex(index, value);
+      setArray(List.toArray());
     }
     setValue(null);
     if (array.length > 0) {
@@ -137,7 +127,8 @@ export const ListPage: React.FC = () => {
       setIsRemovedByIndex(true);
       animateItemRemove(index);
       await sleep(DELAY_IN_MS);
-      deleteAtIndex(index);
+      List.deleteByIndex(index);
+      setArray(List.toArray());
       setIndex(null);
       setIsRemovedByIndex(false);
     }
@@ -148,7 +139,8 @@ export const ListPage: React.FC = () => {
     setIsRemovedFromHead(true);
     animateItemRemove(0);
     await sleep(DELAY_IN_MS);
-    deleteFromHead();
+    List.deleteHead();
+    setArray(List.toArray());
     setIsRemovedFromHead(false);
   };
 
@@ -157,16 +149,14 @@ export const ListPage: React.FC = () => {
     setIsRemovedFromTail(true);
     animateItemRemove(array.length - 1);
     await sleep(DELAY_IN_MS);
-    deleteFromTail();
+    List.deleteTail();
+    setArray(List.toArray());
     setIsRemovedFromTail(false);
   };
 
   useEffect(() => {
     updateLinkedList();
   }, [value]);
-  useEffect(() => {
-    setArray(listArray);
-  }, [listArray]);
   useEffect(() => {
     removeByIndex();
   }, [index, insertMode]);
