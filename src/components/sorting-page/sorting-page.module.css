@@ -1,0 +1,46 @@
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.algorithms {
+  display: flex;
+  gap: 40px;
+}
+
+.sorting {
+  display: flex;
+  gap: 12px;
+  margin-left: 52px;
+  margin-right: 80px;
+}
+
+.list {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  list-style-type: none;
+  padding: 0;
+  margin: 48px 0 0;
+  gap: 10px;
+}
+
+.column {
+  width: 50px;
+  margin-bottom: 6px;
+  background-color: transparent;
+  transition: var(--common-transition);
+}
+
+.default {
+  background-color: var(--default-color);
+}
+
+.changing {
+  background-color: var(--changing-color);
+}
+
+.modified {
+  background-color: var(--modified-color);
+}
