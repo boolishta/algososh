@@ -1,4 +1,5 @@
 import { useItemState } from './useItemState';
 import { useCurrentIndex } from './useCurrentIndex';
+import { useForm } from './useForm';
 
-export { useItemState, useCurrentIndex };
+export { useItemState, useCurrentIndex, useForm };
