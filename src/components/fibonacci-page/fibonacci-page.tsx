@@ -5,7 +5,7 @@ import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import styles from './fibonacci-page.module.css';
 import { Circle } from '../ui/circle/circle';
 import { fibonacci } from './utils';
-import { useCurrentIndex } from '../../hooks';
+import { useCurrentIndex, useForm } from '../../hooks';
 
 export const FibonacciPage: React.FC = () => {
   const [fibonacciArray, setFibonacciArray] = useState<number[]>([]);
@@ -13,6 +13,10 @@ export const FibonacciPage: React.FC = () => {
   const { currentIndex, setCurrentIndex } = useCurrentIndex(
     fibonacciArray.length - 1
   );
+  const [isDisabled, setIsDisabled] = useState(true);
+  const { handleChange, values } = useForm({
+    number: '',
+  });
   const onHandleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -26,6 +30,9 @@ export const FibonacciPage: React.FC = () => {
       setShowAnimate(false);
     }
   }, [currentIndex, fibonacciArray]);
+  useEffect(() => {
+    setIsDisabled(() => values.number.length === 0);
+  }, [values]);
   return (
     <SolutionLayout title="Последовательность Фибоначчи">
       <form
@@ -40,17 +47,24 @@ export const FibonacciPage: React.FC = () => {
           isLimitText={true}
           name="number"
           required
+          data-cy="input"
+          onChange={handleChange}
         />
         <Button
           text="Рассчитать"
           type="submit"
           isLoader={showAnimate}
+          disabled={isDisabled}
+          data-cy="submit"
         />
       </form>
       {fibonacciArray.length > 0 && (
         <ul className={styles.list}>
           {fibonacciArray.slice(0, currentIndex + 1).map((item, idx) => (
-            <li key={idx}>
+            <li
+              key={idx}
+              data-cy="item"
+            >
               <Circle
                 tail={`${idx}`}
                 letter={`${item}`}
