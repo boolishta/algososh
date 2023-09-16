@@ -10,38 +10,38 @@ describe('QueuePage', () => {
     cy.get('[data-cy=submit]').should('be.disabled');
   });
 
-  // it('цвета элементов меняются и каждый шаг анимации отрабатывает корректно', () => {
-  //   inputTexts.forEach((char, index) => {
-  //     cy.get('[data-cy=input]').type(char);
-  //     cy.get('[data-cy=submit]').click();
-  //     cy.get('[class*=circle_content]').each(($el, elIndex) => {
-  //       cy.wrap($el)
-  //         .find('[class*=circle_letter]')
-  //         .invoke('text')
-  //         .then((text) => {
-  //           // Проверяем, что текст не пустой
-  //           if (text.trim() !== '') {
-  //             if (index === elIndex) {
-  //               cy.wrap($el).children('[class*=circle_changing]');
-  //               cy.wrap($el)
-  //                 .children('[class*=circle_tail]')
-  //                 .should('text', 'tail');
-  //             } else {
-  //               cy.wrap($el).children('[class*=circle_default]');
-  //             }
-  //             if (elIndex === 0) {
-  //               cy.wrap($el)
-  //                 .children('[class*=circle_head]')
-  //                 .should('text', 'head');
-  //             }
-  //             cy.wrap($el)
-  //               .children('[class*=circle_circle]')
-  //               .should('text', inputTexts[elIndex]);
-  //           }
-  //         });
-  //     });
-  //   });
-  // });
+  it('цвета элементов меняются и каждый шаг анимации отрабатывает корректно', () => {
+    inputTexts.forEach((char, index) => {
+      cy.get('[data-cy=input]').type(char);
+      cy.get('[data-cy=submit]').click();
+      cy.get('[class*=circle_content]').each(($el, elIndex) => {
+        cy.wrap($el)
+          .find('[class*=circle_letter]')
+          .invoke('text')
+          .then((text) => {
+            // Проверяем, что текст не пустой
+            if (text.trim() !== '') {
+              if (index === elIndex) {
+                cy.wrap($el).children('[class*=circle_changing]');
+                cy.wrap($el)
+                  .children('[class*=circle_tail]')
+                  .should('text', 'tail');
+              } else {
+                cy.wrap($el).children('[class*=circle_default]');
+              }
+              if (elIndex === 0) {
+                cy.wrap($el)
+                  .children('[class*=circle_head]')
+                  .should('text', 'head');
+              }
+              cy.wrap($el)
+                .children('[class*=circle_circle]')
+                .should('text', inputTexts[elIndex]);
+            }
+          });
+      });
+    });
+  });
 
   it('правильность удаления элемента из очереди', () => {
     cy.get('[data-cy=input]').type('s');
