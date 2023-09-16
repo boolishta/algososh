@@ -5,7 +5,7 @@ import { Input } from '../ui/input/input';
 import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import styles from './queue-page.module.css';
 import { Queue } from './utils';
-import { useItemState } from '../../hooks';
+import { useForm, useItemState } from '../../hooks';
 import { sleep } from '../../utils/sleep';
 import { DELAY_IN_MS } from '../../constants/delays';
 
@@ -13,6 +13,10 @@ const queue = new Queue<string>(7);
 
 export const QueuePage: React.FC = () => {
   const [item, setItem] = useState<string | null>(null);
+  const { values, handleChange } = useForm({
+    string: '',
+  });
+  const [isDisabled, setIsDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [queueArray, setQueueArray] = useState<(string | null)[]>(
     queue.toArray()
@@ -74,6 +78,13 @@ export const QueuePage: React.FC = () => {
     addToQueue();
   }, [item]);
 
+  useEffect(() => {
+    if (values.string.length === 0) {
+      setIsDisabled(true);
+    } else {
+      setIsDisabled(false);
+    }
+  }, [values]);
   return (
     <SolutionLayout title="Очередь">
       <form
@@ -86,13 +97,16 @@ export const QueuePage: React.FC = () => {
           extraClass={styles.input}
           name="string"
           required
+          data-cy="input"
           disabled={isFull()}
+          onChange={handleChange}
         />
         <Button
           text="Добавить"
           type="submit"
           isLoader={isLoading}
-          disabled={isFull()}
+          disabled={isDisabled}
+          data-cy="submit"
         />
         <Button
           text="Удалить"
@@ -100,17 +114,22 @@ export const QueuePage: React.FC = () => {
           onClick={remove}
           isLoader={isLoading}
           disabled={queue.isEmpty()}
+          data-cy="remove"
         />
         <Button
           extraClass="ml-35"
           text="Очистить"
           type="button"
           onClick={reset}
+          data-cy="reset"
         />
       </form>
       <ul className={styles.list}>
         {queueArray.map((item, index) => (
-          <li key={`${item}-${index}`}>
+          <li
+            key={`${item}-${index}`}
+            data-cy="item"
+          >
             <Circle
               head={getHead(index)}
               tail={getTail(index)}
