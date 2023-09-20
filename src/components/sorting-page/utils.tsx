@@ -9,7 +9,7 @@ export function getSelectionSortedArray(
   const sortedArrays: number[][] = [];
   const n = array.length;
 
-  for (let i = 0; i < n - 1; i++) {
+  for (let i = 0; i < n; i++) {
     let minIndex = i;
 
     for (let j = i + 1; j < n; j++) {
@@ -41,7 +41,7 @@ export function getBubbleSortedArray(
     const currentArray = [...sortedArrays[sortedArrays.length - 1]];
     let hasSwapped = false;
 
-    for (let j = 0; j < currentArray.length - 1; j++) {
+    for (let j = 0; j < currentArray.length; j++) {
       const shouldSwap =
         direction === Direction.Ascending
           ? currentArray[j] > currentArray[j + 1]

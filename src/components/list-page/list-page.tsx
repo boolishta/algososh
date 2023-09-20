@@ -10,7 +10,7 @@ import { Input } from '../ui/input/input';
 import { SolutionLayout } from '../ui/solution-layout/solution-layout';
 import { ArrowIcon } from '../ui/icons/arrow-icon';
 import styles from './list-page.module.css';
-import { useItemState } from '../../hooks';
+import { useForm, useItemState } from '../../hooks';
 import { sleep } from '../../utils/sleep';
 import { DELAY_IN_MS } from '../../constants/delays';
 import { ElementStates } from '../../types/element-states';
@@ -35,7 +35,10 @@ export const ListPage: React.FC = () => {
   const [isRemovedFromTail, setIsRemovedFromTail] = useState(false);
   const [isRemovedByIndex, setIsRemovedByIndex] = useState(false);
   const [isAddedByIndex, setIsAddedByIndex] = useState(false);
-
+  const [isDisabled, setIsDisabled] = useState(true);
+  const { values, handleChange } = useForm({
+    string: '',
+  });
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -193,6 +196,13 @@ export const ListPage: React.FC = () => {
     },
     [removableValue, removableIndex, array]
   );
+  useEffect(() => {
+    if (values.string.length === 0) {
+      setIsDisabled(true);
+    } else {
+      setIsDisabled(false);
+    }
+  }, [values]);
   return (
     <SolutionLayout title="Связный список">
       <form onSubmit={handleSubmit}>
@@ -202,28 +212,36 @@ export const ListPage: React.FC = () => {
             isLimitText={true}
             maxLength={4}
             name="string"
+            data-cy="input"
+            onChange={handleChange}
           />
           <Button
             text="Добавить в head"
             type="submit"
             onClick={addToHead}
             isLoader={isAddedToHead}
+            data-cy="addHead"
+            disabled={isDisabled}
           />
           <Button
             text="Добавить в tail"
             type="submit"
             onClick={addToTail}
             isLoader={isAddedToTail}
+            data-cy="addTail"
+            disabled={isDisabled}
           />
           <Button
             text="Удалить из head"
             onClick={removeFromHead}
             isLoader={isRemovedFromHead}
+            data-cy="removeHead"
           />
           <Button
             text="Удалить из tail"
             onClick={removeFromTail}
             isLoader={isRemovedFromTail}
+            data-cy="removeTail"
           />
         </div>
         <div className={styles.grid}>
@@ -231,6 +249,7 @@ export const ListPage: React.FC = () => {
             placeholder="Введите индекс"
             type="number"
             name="index"
+            data-cy="index"
           />
           <Button
             extraClass={styles.double}
@@ -238,6 +257,8 @@ export const ListPage: React.FC = () => {
             type="submit"
             onClick={addByIndex}
             isLoader={isAddedByIndex}
+            data-cy="addIndex"
+            disabled={isDisabled}
           />
           <Button
             extraClass={styles.double}
@@ -245,6 +266,8 @@ export const ListPage: React.FC = () => {
             type="submit"
             onClick={() => setInsertMode(InsertModes.Remove)}
             isLoader={isRemovedByIndex}
+            data-cy="removeIndex"
+            disabled={isDisabled}
           />
         </div>
       </form>

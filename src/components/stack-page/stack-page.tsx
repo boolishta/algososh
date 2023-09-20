@@ -1,6 +1,6 @@
 import React, { FormEventHandler, useEffect, useState } from 'react';
 import { DELAY_IN_MS } from '../../constants/delays';
-import { useItemState } from '../../hooks';
+import { useForm, useItemState } from '../../hooks';
 import { sleep } from '../../utils/sleep';
 import { Button } from '../ui/button/button';
 import { Circle } from '../ui/circle/circle';
@@ -16,6 +16,10 @@ export const StackPage: React.FC = () => {
   const [stackArray, setStackArray] = useState<string[]>(stack.toArray());
   const [isLoading, setIsLoading] = useState(false);
   const { setChangingState, getItemState } = useItemState();
+  const { values, handleChange } = useForm({
+    string: '',
+  });
+  const [isDisabled, setIsDisabled] = useState(true);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
@@ -68,6 +72,9 @@ export const StackPage: React.FC = () => {
       isComponentMounted = false;
     };
   }, [string]);
+  useEffect(() => {
+    setIsDisabled(() => values.string.length === 0);
+  }, [values]);
 
   return (
     <SolutionLayout title="Стек">
@@ -82,17 +89,22 @@ export const StackPage: React.FC = () => {
           name="string"
           required
           disabled={isLoading}
+          onChange={handleChange}
+          data-cy="input"
         />
         <Button
           text="Добавить"
           type="submit"
           isLoader={isLoading}
+          disabled={isDisabled}
+          data-cy="add"
         />
         <Button
           text="Удалить"
           type="button"
           onClick={removeFromStack}
           isLoader={isLoading}
+          data-cy="remove"
         />
         <Button
           extraClass="ml-35"
@@ -100,11 +112,15 @@ export const StackPage: React.FC = () => {
           type="button"
           disabled={isLoading}
           onClick={resetStack}
+          data-cy="reset"
         />
       </form>
       <ul className={styles.list}>
         {stackArray.map((item, idx) => (
-          <li key={idx}>
+          <li
+            key={idx}
+            data-cy="item"
+          >
             <Circle
               tail={`${idx}`}
               letter={item}
