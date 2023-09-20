@@ -1,4 +1,10 @@
 import { fibonacci } from '../../../src/components/fibonacci-page/utils';
+import {
+  CIRCLE_SELECTOR,
+  INPUT_SELECTOR,
+  ITEM_SELECTOR,
+  SUBMIT_SELECTOR,
+} from './constants';
 
 describe('Проверка недоступности кнопки при пустом инпуте', () => {
   beforeEach(() => {
@@ -6,8 +12,8 @@ describe('Проверка недоступности кнопки при пус
   });
 
   it('Кнопка добавления недоступна при пустом инпуте', () => {
-    cy.get('[data-cy=input]').should('have.value', '').as('input');
-    cy.get('[data-cy=submit]').should('be.disabled');
+    cy.get(INPUT_SELECTOR).should('have.value', '').as('input');
+    cy.get(SUBMIT_SELECTOR).should('be.disabled');
   });
 });
 
@@ -19,13 +25,11 @@ describe('Числа генерируются корректно', () => {
   it('проверка на корректность выполненной операции', () => {
     const num = 7;
     const fibonacciNum = fibonacci(num);
-    cy.get('[data-cy=input]').type(num);
-    cy.get('[data-cy=submit]').click();
-    cy.get('[data-cy=item]').then(() => {
+    cy.get(INPUT_SELECTOR).type(num);
+    cy.get(SUBMIT_SELECTOR).click();
+    cy.get(ITEM_SELECTOR).then(() => {
       for (let step = 0; step < fibonacciNum.length; step++) {
-        cy.get('[class^="circle_circle"]')
-          .last()
-          .should('text', fibonacciNum[step]);
+        cy.get(CIRCLE_SELECTOR).last().should('text', fibonacciNum[step]);
         cy.wait(1000 * 1);
       }
     });
